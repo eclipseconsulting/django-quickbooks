@@ -83,9 +83,9 @@ class QBDTaskMixin(models.Model):
         elif not obj:
             raise ObjectDoesNotExist
         elif self.qb_operation == QUICKBOOKS_ENUMS.OPP_MOD:
-            return service.update(obj.to_qbd_obj())
+            return service.update(obj)
         elif self.qb_operation == QUICKBOOKS_ENUMS.OPP_ADD:
-            return service.add(obj.to_qbd_obj())
+            return service.add(obj)
         elif self.qb_operation == QUICKBOOKS_ENUMS.OPP_DEL:
             return service.delete(obj.to_qbd_obj())
         elif self.qb_operation == QUICKBOOKS_ENUMS.OPP_VOID:

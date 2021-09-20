@@ -1,3 +1,5 @@
+from logging import getLogger
+
 from spyne.decorator import rpc
 from spyne.model.complex import Array, Unicode
 from spyne.model.primitive import Integer, String
@@ -6,6 +8,8 @@ from spyne.service import ServiceBase
 from django_quickbooks import QBWC_CODES, HIGHEST_SUPPORTING_QBWC_VERSION, \
     get_session_manager_class, get_queue_manager_class
 from django_quickbooks.signals import realm_authenticated
+
+log = getLogger(__name__)
 
 
 class QuickBooksService(ServiceBase):
@@ -20,7 +24,7 @@ class QuickBooksService(ServiceBase):
 
         @return the completed array
         """
-        print('authenticate()')
+        log.info('authenticate()')
         return_array = []
         realm = session_manager.authenticate(username=strUserName, password=strPassword)
         if realm and realm.is_active:
@@ -45,7 +49,7 @@ class QuickBooksService(ServiceBase):
             return_array.append(QBWC_CODES.NVU)
             return_array.append(QBWC_CODES.NVU)
 
-        print('authenticate(): authenticated_array=%s' % return_array)
+        log.info('authenticate(): authenticated_array=%s' % return_array)
         return return_array
 
     @rpc(Unicode, _returns=Unicode)
@@ -58,7 +62,7 @@ class QuickBooksService(ServiceBase):
         @return string telling the web connector what to do next.
         """
 
-        print('clientVersion(): version=%s' % strVersion)
+        log.info('clientVersion(): version=%s' % strVersion)
         # TODO: add version checker for types: warning, error, ok
         return QBWC_CODES.CV
 
@@ -70,7 +74,7 @@ class QuickBooksService(ServiceBase):
         @param ticket the ticket from web connector supplied by web service during call to authenticate method
         @return string telling the web connector what to do next.
         """
-        print('closeConnection(): ticket=%s' % ticket)
+        log.info('closeConnection(): ticket=%s' % ticket)
         realm = session_manager.get_realm(ticket)
         session_manager.close_session(realm)
         return QBWC_CODES.CONN_CLS_OK
@@ -88,7 +92,7 @@ class QuickBooksService(ServiceBase):
         @return string value "done" to indicate web service is finished or the full path of the different company for
         retrying _set_connection.
         """
-        print('connectionError(): ticket=%s, hresult=%s, message=%s' % (ticket, hresult, message))
+        log.info('connectionError(): ticket=%s, hresult=%s, message=%s' % (ticket, hresult, message))
         realm = session_manager.get_realm(ticket)
         session_manager.close_session(realm)
         return QBWC_CODES.CONN_CLS_ERR
@@ -105,7 +109,7 @@ class QuickBooksService(ServiceBase):
         The web connector writes this message to the web connector log for the user and also displays it in the web
         connector’s Status column.
         """
-        print('getLastError(): ticket=%s' % ticket)
+        log.info('getLastError(): ticket=%s' % ticket)
         return QBWC_CODES.UNEXP_ERR
 
     @rpc(Unicode, _returns=Unicode)
@@ -117,7 +121,7 @@ class QuickBooksService(ServiceBase):
 
         @return string message string describing the server version and any other information that user may want to see
         """
-        print('getServerVersion(): version=%s' % HIGHEST_SUPPORTING_QBWC_VERSION)
+        log.info('getServerVersion(): version=%s' % HIGHEST_SUPPORTING_QBWC_VERSION)
         return HIGHEST_SUPPORTING_QBWC_VERSION
 
     @rpc(Unicode, _returns=Unicode)
@@ -129,7 +133,7 @@ class QuickBooksService(ServiceBase):
 
         @return string value "Done" should be returned when interactive session is over
         """
-        print('interactiveDone(): ticket=%s' % ticket)
+        log.info('interactiveDone(): ticket=%s' % ticket)
         return QBWC_CODES.INTR_DONE
 
     @rpc(Unicode, Unicode, _returns=Unicode)
@@ -143,9 +147,9 @@ class QuickBooksService(ServiceBase):
 
         @return string value "Done" should be returned when interactive session is over
         """
-        print('interactiveRejected()')
-        print(ticket)
-        print(reason)
+        log.info('interactiveRejected()')
+        log.info(ticket)
+        log.info(reason)
         return 'Interactive mode rejected'
 
     @rpc(Unicode, Unicode, Unicode, Unicode, _returns=Integer)
@@ -164,22 +168,22 @@ class QuickBooksService(ServiceBase):
         percent complete, a value of 100 means 100 percent complete--there is no more work. A negative value means an
         error has occurred and the Web Connector responds to this with a getLastError call.
         """
-        print('receiveResponseXML()')
-        print("ticket=" + ticket)
-        print("response=" + response)
+        log.info('receiveResponseXML()')
+        log.info("ticket=" + ticket)
+        log.info("response=" + response)
         if hresult:
-            print("hresult=" + hresult)
-            print("message=" + message)
+            log.info("hresult=" + hresult)
+            log.info("message=" + message)
 
         return session_manager.process_response(ticket, response, hresult, message)
 
     @rpc(Unicode, Unicode, Unicode, Unicode, Integer, Integer, _returns=String)
     def sendRequestXML(ctx, ticket, strHCPResponse, strCompanyFileName, qbXMLCountry, qbXMLMajorVers, qbXMLMinorVers):
-        print('sendRequestXML() has been called')
-        print('ticket:', ticket)
-        print('strHCPResponse', strHCPResponse)
-        print('strCompanyFileName', strCompanyFileName)
-        print('qbXMLCountry', qbXMLCountry)
+        log.info('sendRequestXML() has been called')
+        log.info('ticket:', ticket)
+        log.info('strHCPResponse', strHCPResponse)
+        log.info('strCompanyFileName', strCompanyFileName)
+        log.info('qbXMLCountry', qbXMLCountry)
 
         realm = session_manager.get_realm(ticket)
         request = session_manager.get_request(realm)
@@ -189,9 +193,9 @@ class QuickBooksService(ServiceBase):
 
     @rpc(Unicode, Unicode, _returns=Unicode)
     def interactiveUrl(ctx, ticket, sessionID):
-        print('interactiveUrl')
-        print(ticket)
-        print(sessionID)
+        log.info('interactiveUrl')
+        log.info(ticket)
+        log.info(sessionID)
         return ''
 
 

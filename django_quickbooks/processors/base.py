@@ -32,8 +32,8 @@ class ResponseProcessor:
         qbxml_msg_rs = qbxml_root[0]
         if qbxml_msg_rs.tag != 'QBXMLMsgsRs':
             raise QBXMLParseError('QBXMLMsgsRs tag not found')
-        if len(qbxml_msg_rs) != 1:
-            raise QBXMLParseError('QBXMLMsgsRs has more or less than 1 child')
+        # if len(qbxml_msg_rs) != 1:
+        #     raise QBXMLParseError('QBXMLMsgsRs has more or less than 1 child')
         response_body_root = qbxml_msg_rs[0]
         if 'statusCode' not in response_body_root.attrib:
             raise QBXMLParseError('statusCode is not found in %s' % response_body_root.tag)
