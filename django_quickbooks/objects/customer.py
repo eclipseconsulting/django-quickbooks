@@ -33,5 +33,5 @@ class Customer(BaseObject):
 
     @staticmethod
     def get_service():
-        from django_quickbooks.services.customer import EclipseCustomerService
-        return EclipseCustomerService
+        from django_quickbooks.services.customer import CustomerServiceCustomFields
+        return CustomerServiceCustomFields

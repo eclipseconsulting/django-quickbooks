@@ -22,27 +22,28 @@ class CustomerService(Service):
         return self._find_by_full_name(QUICKBOOKS_ENUMS.RESOURCE_CUSTOMER, full_name)
 
 
-class EclipseCustomerService(CustomerService):
+class CustomerServiceCustomFields(CustomerService):
     complex_fields = ['BillAddress', 'ShipAddress']
-    custom_fields = {'CUSTFLD1': 'billing_preference', 'CUSTFLD4': 'special_instructions', 'CUSTFLD6': 'price_level',
-                     'CUSTFLD7': 'id'}
 
     def _cust_fields(self, object):
+
         xml = ''
-        for custom_field in self.custom_fields:
-            if hasattr(object, self.custom_fields[custom_field]):
-                xml += f'''<DataExtModRq>
-                                    <DataExtMod>
-                                        <OwnerID>0</OwnerID>
-                                        <DataExtName>{custom_field}</DataExtName>
-                                        <ListDataExtType>Customer</ListDataExtType>
-                                        <ListObjRef>
-                                                <FullName>{object.name}</FullName>
-                                        </ListObjRef>
-                                        <DataExtValue>{getattr(object, self.custom_fields[custom_field])}</DataExtValue>
-                                    </DataExtMod>
-                                </DataExtModRq>
-                                '''
+        if hasattr(object, 'QB_CUSTOM_FIELDS'):
+            custom_fields = object.QB_CUSTOM_FIELDS
+            for custom_field in custom_fields:
+                if hasattr(object, custom_fields[custom_field]):
+                    xml += f'''<DataExtModRq>
+                                        <DataExtMod>
+                                            <OwnerID>0</OwnerID>
+                                            <DataExtName>{custom_field}</DataExtName>
+                                            <ListDataExtType>Customer</ListDataExtType>
+                                            <ListObjRef>
+                                                    <FullName>{object.name}</FullName>
+                                            </ListObjRef>
+                                            <DataExtValue>{getattr(object, custom_fields[custom_field])}</DataExtValue>
+                                        </DataExtMod>
+                                    </DataExtModRq>
+                                    '''
         return xml
 
     def _add(self, resource, object):
