@@ -32,18 +32,18 @@ class CustomerServiceCustomFields(CustomerService):
             custom_fields = object.QB_CUSTOM_FIELDS
             for custom_field in custom_fields:
                 if hasattr(object, custom_fields[custom_field]):
-                    xml += f'''<DataExtModRq>
-                                        <DataExtMod>
-                                            <OwnerID>0</OwnerID>
-                                            <DataExtName>{custom_field}</DataExtName>
-                                            <ListDataExtType>Customer</ListDataExtType>
-                                            <ListObjRef>
-                                                    <FullName>{object.name}</FullName>
-                                            </ListObjRef>
-                                            <DataExtValue>{getattr(object, custom_fields[custom_field])}</DataExtValue>
-                                        </DataExtMod>
-                                    </DataExtModRq>
-                                    '''
+                    xml += f'''<DataExtAddRq>
+                                    <DataExtAdd>
+                                        <OwnerID>0</OwnerID>
+                                        <DataExtName>{custom_field}</DataExtName>
+                                        <ListDataExtType>Customer</ListDataExtType>
+                                        <ListObjRef>
+                                                <FullName>{object.name}</FullName>
+                                        </ListObjRef>
+                                        <DataExtValue>{getattr(object, custom_fields[custom_field])}</DataExtValue>
+                                    </DataExtAdd>
+                                </DataExtAddRq>
+                                '''
         return xml
 
     def _add(self, resource, object):
