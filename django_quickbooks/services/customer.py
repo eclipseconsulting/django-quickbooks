@@ -46,6 +46,27 @@ class CustomerServiceCustomFields(CustomerService):
                                 '''
         return xml
 
+    def _mod_cust_fields(self, object):
+
+        xml = ''
+        if hasattr(object, 'QB_CUSTOM_FIELDS'):
+            custom_fields = object.QB_CUSTOM_FIELDS
+            for custom_field in custom_fields:
+                if hasattr(object, custom_fields[custom_field]):
+                    xml += f'''<DataExtModRq>
+                                    <DataExtMod>
+                                        <OwnerID>0</OwnerID>
+                                        <DataExtName>{custom_field}</DataExtName>
+                                        <ListDataExtType>Customer</ListDataExtType>
+                                        <ListObjRef>
+                                                <FullName>{object.name}</FullName>
+                                        </ListObjRef>
+                                        <DataExtValue>{getattr(object, custom_fields[custom_field])}</DataExtValue>
+                                    </DataExtMod>
+                                </DataExtModRq>
+                                '''
+        return xml
+
     def _add(self, resource, object):
         qbd = object.to_qbd_obj()
         xml = ''
@@ -66,7 +87,7 @@ class CustomerServiceCustomFields(CustomerService):
             opp_type=QUICKBOOKS_ENUMS.OPP_MOD, ref_fields=self.ref_fields, change_fields=self.mod_fields,
             complex_fields=self.complex_fields))
 
-        xml += self._cust_fields(object)
+        xml += self._mod_cust_fields(object)
         return self._prepare_request(xml)
 
     def update(self, object):
