@@ -184,8 +184,8 @@ def send_customer_to_qbtask(sender, instance, **kwargs):
 ```
 You can use any method you would like to create a record in QBDTask, make sure to populate all these fields correctly.
 
-## CustomerServiceCustomFields  
-I added a new Service class to handle passing custom fields.
+## CustomerService  
+I added the ability to add custom fields
 to take advantage of this define a dictionary called QB_CUSTOM_FIELDS on your model. 
 The index needs to be the name of the custom field in quickbooks, and the value needs to be the name
 of the model field. 

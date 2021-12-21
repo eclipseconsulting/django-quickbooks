@@ -21,10 +21,6 @@ class CustomerService(Service):
     def find_by_full_name(self, full_name):
         return self._find_by_full_name(QUICKBOOKS_ENUMS.RESOURCE_CUSTOMER, full_name)
 
-
-class CustomerServiceCustomFields(CustomerService):
-    complex_fields = ['BillAddress', 'ShipAddress']
-
     def _cust_fields(self, object):
 
         xml = ''
