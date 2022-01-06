@@ -54,8 +54,6 @@ class SessionManager(BaseSessionManager):
             except ObjectDoesNotExist as e:
                 logger.error(e)
 
-        queryset.delete()
-
     def new_requests_count(self, realm):
         queue_name = '%s:%s' % (self.request_queue_prefix, realm.id)
         return self.queue_manager.get_message_count(queue_name)
@@ -63,10 +61,10 @@ class SessionManager(BaseSessionManager):
     def process_response(self, ticket, response, hresult, message):
         from django_quickbooks import get_processors
 
-        root = ET.fromstring(response)
-        e1 = root[0][0]
-
         try:
+            root = ET.fromstring(response)
+            e1 = root[0][0]
+            # handle sync failure
             if e1.tag == 'CustomerModRs' and 'statusCode' in e1.attrib:
                 if e1.attrib["statusCode"] == '3200':
                     # handle the error by updating the sync id
@@ -80,8 +78,24 @@ class SessionManager(BaseSessionManager):
                     object.qbd_object_version = good_sequence
                     # saving will put it back in the queue
                     object.save()
+                elif e1.attrib["statusCode"] == '0':
+                    qbd_element = root[0][0][0][0]
+                    qbd_id = qbd_element.text
+                    # get the object class in a smart way
+                    LocalCustomer = qbwc_settings.LOCAL_MODEL_CLASSES['Customer']
+                    object = LocalCustomer.objects.get(qbd_object_id=qbd_id)
+
+                    # get any qdbtasks that have that object id and delete them
+                    queryset = QBDTask.objects.filter(object_id=object.id, qb_resource='Customer')
+                    queryset.delete()
+            elif e1.tag == 'CustomerAddRs':
+                # get any add qdbtasks and delete them
+                queryset = QBDTask.objects.filter(qb_operation='Add')
+                queryset.delete()
+
         except IndexError:
             pass
+
         realm = self.get_realm(ticket)
         processors = get_processors()
         for processor in processors:
