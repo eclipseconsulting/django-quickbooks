@@ -10,6 +10,8 @@ from django_quickbooks import get_realm_session_model, get_realm_model, get_qbd_
 from django_quickbooks.core.session_manager import BaseSessionManager
 from django_quickbooks.decorators import realm_connection
 from django_quickbooks.exceptions import QBXMLParseError, QBXMLStatusError, QbException
+import xml.etree.ElementTree as ET
+from django_quickbooks.settings import qbwc_settings
 
 Realm = get_realm_model()
 RealmSession = get_realm_session_model()
@@ -60,6 +62,26 @@ class SessionManager(BaseSessionManager):
 
     def process_response(self, ticket, response, hresult, message):
         from django_quickbooks import get_processors
+
+        root = ET.fromstring(response)
+        e1 = root[0][0]
+
+        try:
+            if e1.tag == 'CustomerModRs' and 'statusCode' in e1.attrib:
+                if e1.attrib["statusCode"] == '3200':
+                    # handle the error by updating the sync id
+                    qbd_element = root[0][0][0][0]
+                    qbd_id = qbd_element.text
+                    # get the object class in a smart way
+                    LocalCustomer = qbwc_settings.LOCAL_MODEL_CLASSES['Customer']
+                    object = LocalCustomer.objects.get(qbd_object_id=qbd_id)
+                    sequence_element = root[0][0][0][3]
+                    good_sequence = int(sequence_element.text)
+                    object.qbd_object_version = good_sequence
+                    # saving will put it back in the queue
+                    object.save()
+        except IndexError:
+            pass
         realm = self.get_realm(ticket)
         processors = get_processors()
         for processor in processors:
