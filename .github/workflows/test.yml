@@ -31,4 +31,4 @@ jobs:
         python3 -m pip install --upgrade pip setuptools wheel
         if [ -f requirements_dev.txt ]; then pip install -r requirements_dev.txt; fi
     - name: Test
-      run: pytest --ds=project.settings
+      run: pytest
